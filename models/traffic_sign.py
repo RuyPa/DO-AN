@@ -1,28 +1,3 @@
-# class TrafficSign:
-#     def __init__(self, id=None, name='', description='', img_url=''):
-#         self.id = id
-#         self.name = name
-#         self.description = description
-#         self.img_url = img_url
-
-#     @staticmethod
-#     def from_row(row):
-#         """Tạo đối tượng TrafficSign từ một bản ghi cơ sở dữ liệu."""
-#         return TrafficSign(
-#             id=row['id'],
-#             name=row['name'],
-#             description=row['description'],
-#             img_url=row['img_url']
-#         )
-    
-#     def to_dict(self):
-#         """Chuyển đối tượng TrafficSign thành từ điển."""
-#         return {
-#             'id': self.id,
-#             'name': self.name,
-#             'description': self.description,
-#             'img_url': self.img_url
-#         }
 class TrafficSign:
     def __init__(self, id=None, name='', code='', description='', path=''):
         self.id = id

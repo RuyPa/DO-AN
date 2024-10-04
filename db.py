@@ -1,5 +1,9 @@
 import mysql.connector
 from flask import current_app
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 
 def get_db_connection():
     return mysql.connector.connect(
