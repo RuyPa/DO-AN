@@ -1,5 +1,6 @@
 from db import get_db_connection
 from models.sample import Sample
+from services.label_service import get_labels_by_sample_id
 
 def create_sample_table():
     connection = get_db_connection()
@@ -25,6 +26,15 @@ def get_all_samples():
     connection.close()
     return [Sample.from_row(row) for row in rows]
 
+# def get_sample_by_id(sample_id):
+#     connection = get_db_connection()
+#     cursor = connection.cursor(dictionary=True)
+#     cursor.execute('SELECT * FROM tbl_sample WHERE id = %s', (sample_id,))
+#     row = cursor.fetchone()
+#     cursor.close()
+#     connection.close()
+#     return Sample.from_row(row) if row else None
+
 def get_sample_by_id(sample_id):
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
@@ -32,7 +42,12 @@ def get_sample_by_id(sample_id):
     row = cursor.fetchone()
     cursor.close()
     connection.close()
-    return Sample.from_row(row) if row else None
+
+    if row:
+        # Lấy danh sách các labels thuộc về sample này
+        labels = get_labels_by_sample_id(sample_id)
+        return Sample.from_row(row, labels=labels)  # Truyền danh sách labels vào sample
+    return None
 
 def add_sample(sample: Sample):
     connection = get_db_connection()
