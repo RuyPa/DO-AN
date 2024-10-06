@@ -43,6 +43,15 @@ class Sample:
             labels=labels  # Nhận danh sách các labels từ service
         )
     
+    @classmethod
+    def from_prj(cls, row):
+        return cls(
+            id=row['sample_id'],
+            code=row['sample_code'],
+            path=row['sample_path'],
+            name=row['sample_name']
+        )
+    
     def to_dict(self):
         return {
             'id': self.id,

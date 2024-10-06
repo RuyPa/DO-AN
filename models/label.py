@@ -55,6 +55,17 @@ class Label:
             traffic_sign=traffic_sign  # Nhận đối tượng TrafficSign
         )
     
+    @classmethod
+    def from_prj(cls, row, traffic_sign):
+        return cls(
+            id=row['label_id'],
+            centerX=row['centerX'],
+            centerY=row['centerY'],
+            height=row['height'],
+            width=row['width'],
+            traffic_sign=traffic_sign
+        )
+    
     def to_dict(self):
         """Chuyển đổi Label thành từ điển, bao gồm thông tin của TrafficSign."""
         return {

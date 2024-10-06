@@ -17,6 +17,7 @@ from services.traffic_sign_service import create_tables
 from routes.routes import api_routes
 from routes.sample_route import sample_bp
 from routes.label_route import label_bp
+from routes.model_sample_route import model_sample_bp
 
 # @app.before_first_request
 # def setup():
@@ -25,6 +26,8 @@ from routes.label_route import label_bp
 app.register_blueprint(api_routes)
 app.register_blueprint(sample_bp)
 app.register_blueprint(label_bp)
+app.register_blueprint(model_sample_bp)
+
 
 if __name__ == '__main__':
     app.run(debug=False)

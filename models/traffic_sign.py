@@ -17,6 +17,15 @@ class TrafficSign:
             path=row['path']
         )
     
+    @classmethod
+    def from_prj(cls, row):
+        return cls(
+            id=row['traffic_sign_id'],
+            name=row['traffic_sign_name'],
+            description=row['traffic_sign_description'],
+            path=row['traffic_sign_path']
+        )
+    
     def to_dict(self):
         """Chuyển đối tượng TrafficSign thành từ điển."""
         return {
