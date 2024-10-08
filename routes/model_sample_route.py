@@ -5,6 +5,7 @@ from services.model_sample_service import (
     add_model_sample,
     get_model_samples_by_model_id
 )
+from services.sample_service import get_sample_by_id
 
 model_sample_bp = Blueprint('model_sample_bp', __name__)
 
