@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, abort
 from models.label import Label
+from models.traffic_sign import TrafficSign
 from services.label_service import (
     create_label,
     get_all_labels,
@@ -40,7 +41,7 @@ def create_label_route():
     if centerX is None or centerY is None or height is None or width is None or sample_id is None or traffic_sign_id is None:
         abort(400, description="All fields are required")
 
-    label = Label(centerX=centerX, centerY=centerY, height=height, width=width, sample_id=sample_id, traffic_sign_id=traffic_sign_id)
+    label = Label(centerX=centerX, centerY=centerY, height=height, width=width, sample_id=sample_id, traffic_sign = TrafficSign.from_req(traffic_sign_id) )
     
     create_label(label)
     

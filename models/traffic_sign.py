@@ -26,6 +26,12 @@ class TrafficSign:
             path=row['traffic_sign_path']
         )
     
+    @classmethod
+    def from_req(cls, traffic_sign_id):
+        return cls(
+            id= traffic_sign_id
+        )
+    
     def to_dict(self):
         """Chuyển đối tượng TrafficSign thành từ điển."""
         return {

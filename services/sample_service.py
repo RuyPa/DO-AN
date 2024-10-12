@@ -1,6 +1,6 @@
 from db import get_db_connection
 from models.sample import Sample
-from services.label_service import get_labels_by_sample_id
+from services.label_service import create_label, get_labels_by_sample_id
 
 def create_sample_table():
     connection = get_db_connection()
@@ -44,19 +44,36 @@ def get_sample_by_id(sample_id):
     connection.close()
 
     if row:
-        # Lấy danh sách các labels thuộc về sample này
         labels = get_labels_by_sample_id(sample_id)
-        return Sample.from_row(row, labels=labels)  # Truyền danh sách labels vào sample
+        return Sample.from_row(row, labels=labels)
     return None
 
 def add_sample(sample: Sample):
     connection = get_db_connection()
     cursor = connection.cursor()
-    cursor.execute('INSERT INTO tbl_sample (code, path, name) VALUES (%s, %s, %s)',
-                   (sample.code, sample.path, sample.name))
-    connection.commit()
-    cursor.close()
-    connection.close()
+
+    try:
+        cursor.execute('INSERT INTO tbl_sample (code, path, name) VALUES (%s, %s, %s)',
+                       (sample.code, sample.path, sample.name))
+        sample_id = cursor.lastrowid
+        print(f"Sample created with ID: {sample_id}") 
+        
+        if sample.labels:
+            for label in sample.labels:
+                label.sample_id = sample_id
+                cursor.execute('''
+                    INSERT INTO tbl_label (centerX, centerY, height, width, sample_id, traffic_sign_id)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                ''', (label.centerX, label.centerY, label.height, label.width, label.sample_id, label.traffic_sign.id))        
+                # create_label(label)
+        connection.commit()
+    
+    except Exception as e:
+        connection.rollback()
+    
+    finally:
+        cursor.close()
+        connection.close()
 
 def update_sample(sample_id, code=None, path=None, name=None):
     connection = get_db_connection()

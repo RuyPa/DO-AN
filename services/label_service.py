@@ -8,7 +8,7 @@ def create_label(label: Label):
     cursor.execute('''
         INSERT INTO tbl_label (centerX, centerY, height, width, sample_id, traffic_sign_id)
         VALUES (%s, %s, %s, %s, %s, %s)
-    ''', (label.centerX, label.centerY, label.height, label.width, label.sample_id, label.traffic_sign_id))
+    ''', (label.centerX, label.centerY, label.height, label.width, label.sample_id, label.traffic_sign.id))
     connection.commit()
     cursor.close()
     connection.close()
