@@ -216,12 +216,69 @@ def add_model_with_logging(app, sample_ids):
 
         socketio.emit('progress', {'message': "Model training completed!", 'progress': 100})
 
-        # try_remove_directory(base_dir)
+        cursor.execute("SELECT id, path FROM tbl_model ORDER BY id DESC LIMIT 1")
+        last_model = cursor.fetchone()
+
+        last_path = last_model['path']
+
+        base, train_num = os.path.split(last_path)
+        
+        num = int(train_num.replace('train', ''))
+        next_num = num + 1
+        new_train_path = f"train{next_num}"
+        new_path = os.path.join(base, new_train_path)
+
+        results_csv_path = os.path.join(new_path, 'results.csv')
 
 
-        # Close the connection
-        cursor.close()
-        connection.close()
+        precision = 0
+        recall = 0
+        f1 = 0
+        count = 0
+        acc = 0
+
+        with open(results_csv_path, "r") as f:
+            reader = csv.reader(f)
+            next(reader)  # Skip header row
+
+            for row in reader:
+                count += 1
+                precision += float(row[4])
+                recall += float(row[5])
+                acc += float(row[7])
+                # Compute F1 based on precision and recall at each iteration
+                f1 += (2 * precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
+
+            # Average calculations
+            avg_precision = precision / count
+            avg_recall = recall / count
+            avg_f1 = f1 / count
+            avg_acc = acc / count
+
+            # Tạo một model mới
+            cursor.execute(
+                '''INSERT INTO tbl_model (name, path, date, acc, pre, f1, recall, status) 
+                    VALUES (%s, %s, NOW(), %s, %s, %s, %s, %s)''',
+                ('best.pt', new_path, avg_acc, avg_precision, avg_f1, avg_recall, 0)
+            )
+
+            model_id = cursor.lastrowid  # Lấy ID của model vừa tạo
+            
+            # Tạo các model_sample liên kết với các sample
+            for sample_id in sample_ids:
+                cursor.execute(
+                    '''INSERT INTO tbl_model_sample (model_id, sample_id, created_date)
+                        VALUES (%s, %s, NOW())''',
+                    (model_id, sample_id)
+                )
+            
+            # Commit các thay đổi vào cơ sở dữ liệu
+            connection.commit()
+
+
+            # Close the connection
+            cursor.close()
+            connection.close()
 
 @app.route('/api/start-model', methods=['POST'])
 def start_model():

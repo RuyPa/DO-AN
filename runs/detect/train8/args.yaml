@@ -1,7 +1,7 @@
 task: detect
 mode: train
 model: static/yolov8n.pt
-data: static/1eb9fdf1-03a7-44f0-946e-fe2c0765f629/config.yaml
+data: static/5dd44951-6605-4cb7-8ffa-667052084dc9/config.yaml
 epochs: 10
 time: null
 patience: 100
