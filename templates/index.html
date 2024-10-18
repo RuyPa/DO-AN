@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Creation Progress</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Model Creation</h1>
+    <button onclick="startModelCreation()">Start Model Creation</button>
+
+    <div id="progress">Waiting for progress...</div>
+    <div id="progress-bar" style="width: 100%; background-color: #ddd;">
+        <div id="bar" style="width: 0%; height: 30px; background-color: #4caf50;"></div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        socket.on('progress', (data) => {
+            document.getElementById('progress').innerText = data.message;
+            document.getElementById('bar').style.width = data.progress + '%';
+        });
+
+        function startModelCreation() {
+            fetch('/start-model', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ samples: [1, 2, 3, 4, 5] })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+            });
+        }
+    </script>
+</body>
+</html>

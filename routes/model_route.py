@@ -1,6 +1,6 @@
 import random
-from flask import Blueprint, jsonify, request
-from services.model_service import add_model, get_model_by_id, get_all_models
+from flask import Blueprint, Response, jsonify, request, stream_with_context
+from services.model_service import add_model, add_model_with_logging, get_model_by_id, get_all_models
 
 model_bp = Blueprint('model_bp', __name__)
 
@@ -18,7 +18,11 @@ def get_model(id):
         return jsonify(model.to_dict()), 200
     else:
         return jsonify({'message': 'Model not found'}), 404
-
+    
+def generate_logs(sample_ids):
+    # Yield logs one by one, converting them to bytes
+    for log in add_model_with_logging(sample_ids):
+        yield log.encode('utf-8')
 
 @model_bp.route('/api/models', methods=['POST'])
 def create_model():
@@ -27,10 +31,7 @@ def create_model():
     if 'samples' not in data or not isinstance(data['samples'], list):
         return jsonify({'error': 'Missing or invalid sample list'}), 400
 
-    # Lấy danh sách các id từ đối tượng samples
     sample_ids = [sample['id'] for sample in data['samples']]
 
-    # Gọi add_model với danh sách id
-    add_model(sample_ids)
-
-    return jsonify({'message': 'Model created successfully'})
+    # Return a streaming response
+    return Response(stream_with_context(generate_logs(sample_ids)), mimetype='text/plain')
