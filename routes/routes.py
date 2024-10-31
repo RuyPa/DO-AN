@@ -85,18 +85,40 @@ def create_sign():
 
 @api_routes.route('/api/traffic_signs/<int:id>', methods=['PUT'])
 def update_sign_route(id):
-    data = request.get_json()
-    name = data.get('name')
-    code = data.get('code')
-    description = data.get('description')
-    path = data.get('path')
+    data = request.form  # Lấy dữ liệu từ form-data
     
+    # Tìm TrafficSign hiện tại từ database
+    sign = get_sign_by_id(id)  # Giả sử có hàm này để lấy đối tượng TrafficSign hiện tại
+    
+    if not sign:
+        abort(404, description="Traffic sign not found")
+    
+    # Lấy thông tin mới từ form-data
+    name = data.get('name', sign.name)  # Nếu không có, giữ nguyên giá trị cũ
+    code = data.get('code', sign.code)  # Nếu không có, giữ nguyên giá trị cũ
+    description = data.get('description', sign.description)  # Nếu không có, giữ nguyên giá trị cũ
+    path = sign.path  # Giữ nguyên đường dẫn cũ
+
+    # Kiểm tra thông tin bắt buộc
     if not name or not code:
         abort(400, description="Name and Code are required")
     
-    update_sign(id, name, code, description, path)
+    file = request.files.get('image')  # Nhận file từ multipart/form-data
+    
+    # Nếu có file ảnh mới, upload và lấy URL mới
+    if file:
+        try:
+            upload_result = cloudinary.uploader.upload(file)
+            path = upload_result.get('secure_url')  # Nhận URL an toàn của ảnh mới đã upload
+            
+        except Exception as e:
+            abort(500, description=f"Image upload failed: {str(e)}")
+
+    # Cập nhật TrafficSign trong database
+    update_sign(id, name, code, description, path)  # Cập nhật các thông tin cần thiết
     
     return jsonify({'message': 'Traffic sign updated successfully'})
+
 
 @api_routes.route('/api/traffic_signs/<int:id>', methods=['DELETE'])
 def delete_sign_route(id):

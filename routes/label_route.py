@@ -54,14 +54,14 @@ def update_label_route(id):
     if label is None:
         abort(404, description="Label not found")
 
-    centerX = data.get('centerX', label.centerX)
-    centerY = data.get('centerY', label.centerY)
-    height = data.get('height', label.height)
-    width = data.get('width', label.width)
-    sample_id = data.get('tbl_sample_id', label.sample_id)
-    traffic_sign_id = data.get('traffic_sign_id', label.traffic_sign_id)
+    label.centerX = data.get('centerX', label.centerX)
+    label.centerY = data.get('centerY', label.centerY)
+    label.height = data.get('height', label.height)
+    label.width = data.get('width', label.width)
+    label.sample_id = data.get('sample_id', label.sample_id)
+    label.traffic_sign_id = data.get('traffic_sign_id', label.traffic_sign.id)
 
-    update_label(id, centerX, centerY, height, width, sample_id, traffic_sign_id)
+    update_label(label)
     return jsonify({'message': 'Label updated successfully'})
 
 @label_bp.route('/api/labels/<int:id>', methods=['DELETE'])

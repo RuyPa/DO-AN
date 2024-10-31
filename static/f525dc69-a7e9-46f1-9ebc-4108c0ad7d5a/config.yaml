@@ -1,0 +1,11 @@
+names:
+  0: cam_di_nguoc_chieu
+  1: cam_dung_va_do_xe
+  2: cam_re_trai
+  3: gioi_han_toc_do
+  4: bien_bao_cam
+  5: bien_nguy_hiem
+  6: bien_hieu_lenh
+path: static\f525dc69-a7e9-46f1-9ebc-4108c0ad7d5a
+train: train/images
+val: valid/images

@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request, abort
 from models.label import Label
 from models.sample import Sample
 from models.traffic_sign import TrafficSign
+from services.label_service import create_label, delete_label, update_label, delete_labels_by_sample_id
 from services.sample_service import (
     get_all_samples,
     get_sample_by_id,
@@ -81,23 +82,85 @@ def create_sample():
 @sample_bp.route('/api/samples/<int:id>', methods=['PUT'])
 def update_sample_route(id):
     data = request.json
-
     sample = get_sample_by_id(id)
     if sample is None:
         abort(404, description="Sample not found")
 
-    code = data.get('code', sample.code)
-    path = data.get('path', sample.path)
-    name = data.get('name', sample.name)
+    # Cập nhật thông tin của Sample nếu có
+    updated = False
+    if 'code' in data:
+        sample.code = data['code']
+        updated = True
+    if 'path' in data:
+        sample.path = data['path']
+        updated = True
+    if 'name' in data:
+        sample.name = data['name']
+        updated = True
 
-    if code == sample.code and path == sample.path and name == sample.name:
-        return jsonify({'message': 'No changes made'}), 200
+    # Lưu thay đổi vào cơ sở dữ liệu nếu có thay đổi
+    if updated:
+        update_sample(sample)  # Gọi hàm để cập nhật sample trong DB
 
-    update_sample(id, code, path, name)
-    
-    return jsonify({'message': 'Sample updated successfully'})
+    # Xử lý danh sách labels
+    labels_data = data.get('labels', [])
+    existing_labels = {label.id: label for label in sample.labels}
+
+    for label_data in labels_data:
+        label_id = label_data.get('id')
+
+        # Kiểm tra nếu label cần xóa
+        if label_data.get('isDeleted'):  # Nếu có trường isDeleted là true
+            if label_id in existing_labels:
+                # Xóa label khỏi sample
+                sample.labels = [label for label in sample.labels if label.id != label_id]
+                delete_label(label_id)  # Gọi hàm để xóa label trong DB
+            continue  # Bỏ qua vòng lặp này, vì label đã được xử lý
+
+        if label_id in existing_labels:
+            label = existing_labels[label_id]
+
+            # Cập nhật các thuộc tính của label nếu có
+            if 'centerX' in label_data:
+                label.centerX = label_data['centerX']
+            if 'centerY' in label_data:
+                label.centerY = label_data['centerY']
+            if 'height' in label_data:
+                label.height = label_data['height']
+            if 'width' in label_data:
+                label.width = label_data['width']
+            if 'traffic_sign_id' in label_data:
+                label.traffic_sign =  TrafficSign.from_req(label_data['traffic_sign_id'])
+
+            # Lưu thay đổi vào cơ sở dữ liệu
+            update_label(label)  # Gọi hàm để cập nhật label trong DB
+        else:
+            # Thêm label mới nếu ID không tồn tại
+            new_label = Label(
+                centerX=label_data.get('centerX'),
+                centerY=label_data.get('centerY'),
+                height=label_data.get('height'),
+                width=label_data.get('width'),
+                traffic_sign=TrafficSign.from_req(label_data.get('traffic_sign_id')),
+                sample_id=id
+            )
+            create_label(label= new_label)
+
+    # Lưu tất cả các thay đổi vào cơ sở dữ liệu
+    update_sample(sample)
+
+    return jsonify({'message': 'Sample updated successfully'}), 200
+
+
+
 
 @sample_bp.route('/api/samples/<int:id>', methods=['DELETE'])
 def delete_sample_route(id):
+    # Xóa tất cả các label liên quan đến sample
+    delete_labels_by_sample_id(id)
+    
+    # Xóa sample
     delete_sample(id)
-    return jsonify({'message': 'Sample deleted successfully'})
+    
+    return jsonify({'message': 'Sample and its labels deleted successfully'})
+

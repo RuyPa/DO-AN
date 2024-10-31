@@ -52,7 +52,7 @@ def get_label_by_id(label_id):
     # Trả về đối tượng Label, kèm theo TrafficSign
     return Label.from_row(row, traffic_sign=traffic_sign)
 
-def update_label(label_id, centerX=None, centerY=None, height=None, width=None, sample_id=None, traffic_sign_id=None):
+def update_label(label):
     connection = get_db_connection()
     cursor = connection.cursor()
 
@@ -60,31 +60,34 @@ def update_label(label_id, centerX=None, centerY=None, height=None, width=None, 
     updates = []
     params = []
 
-    if centerX is not None:
+    if label.centerX is not None:
         updates.append('centerX = %s')
-        params.append(centerX)
-    if centerY is not None:
+        params.append(label.centerX)
+    if label.centerY is not None:
         updates.append('centerY = %s')
-        params.append(centerY)
-    if height is not None:
+        params.append(label.centerY)
+    if label.height is not None:
         updates.append('height = %s')
-        params.append(height)
-    if width is not None:
+        params.append(label.height)
+    if label.width is not None:
         updates.append('width = %s')
-        params.append(width)
-    if sample_id is not None:
-        updates.append('tbl_sample_id = %s')
-        params.append(sample_id)
-    if traffic_sign_id is not None:
+        params.append(label.width)
+    if label.sample_id is not None:
+        updates.append('sample_id = %s')
+        params.append(label.sample_id)
+    if label.traffic_sign.id is not None:
         updates.append('traffic_sign_id = %s')
-        params.append(traffic_sign_id)
+        params.append(label.traffic_sign.id)
 
-    params.append(label_id)
-    cursor.execute(f'UPDATE tbl_label SET {", ".join(updates)} WHERE id = %s', tuple(params))
+    # Kiểm tra xem có trường nào cần cập nhật không
+    if updates:
+        params.append(label.id)  # Thêm ID label vào cuối params
+        cursor.execute(f'UPDATE tbl_label SET {", ".join(updates)} WHERE id = %s', tuple(params))
+        connection.commit()
     
-    connection.commit()
     cursor.close()
     connection.close()
+
 
 def delete_label(label_id):
     connection = get_db_connection()
@@ -93,6 +96,21 @@ def delete_label(label_id):
     connection.commit()
     cursor.close()
     connection.close()
+
+def delete_labels_by_sample_id(sample_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    
+    # Thực thi truy vấn để xóa tất cả các labels liên quan đến sample_id
+    cursor.execute('DELETE FROM tbl_label WHERE sample_id = %s', (sample_id,))
+    
+    # Lưu thay đổi
+    connection.commit()
+    
+    # Đóng kết nối
+    cursor.close()
+    connection.close()
+
 
 # def get_labels_by_sample_id(sample_id):
 #     connection = get_db_connection()
