@@ -5,6 +5,7 @@ import shutil
 import time
 import uuid
 
+from flask import jsonify, send_file
 from sklearn.model_selection import train_test_split
 import yaml
 from models.model import Model
@@ -374,3 +375,63 @@ def add_model_with_logging(sample_ids):
 
     cursor.close()
     connection.close()
+
+def delete_model(id):
+    # Kết nối đến cơ sở dữ liệu
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # Xóa các bản ghi model_sample liên quan đến model
+    delete_model_samples_query = "DELETE FROM tbl_model_sample WHERE model_id = %s"
+    cursor.execute(delete_model_samples_query, (id,))
+
+    # Xóa model
+    delete_model_query = "DELETE FROM tbl_model WHERE id = %s"
+    cursor.execute(delete_model_query, (id,))
+
+    # Lưu các thay đổi
+    connection.commit()
+
+    return {'status': 'success', 'message': 'Model and associated samples deleted successfully'}
+
+def set_active_model(model_id):
+    # Kết nối đến cơ sở dữ liệu
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # Đặt tất cả các model khác về trạng thái 0
+    reset_status_query = "UPDATE tbl_model SET status = 0 WHERE status = 1"
+    cursor.execute(reset_status_query)
+
+    # Đặt model được chỉ định về trạng thái 1
+    set_active_query = "UPDATE tbl_model SET status = 1 WHERE id = %s"
+    cursor.execute(set_active_query, (model_id,))
+
+    # Lưu các thay đổi
+    connection.commit()
+
+    return {'status': 'success', 'message': f'Model {model_id} set to active successfully'}
+
+def get_model_path_by_id(model_id):
+    # Lấy đường dẫn của model từ cơ sở dữ liệu
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    cursor.execute("SELECT path FROM tbl_model WHERE id = %s", (model_id,))
+    model = cursor.fetchone()
+    
+    cursor.close()
+    connection.close()
+    
+    return model['path']
+
+
+def download_model_file(model_path):
+    # Gửi file về phía người dùng
+    if not os.path.exists(model_path):
+        return jsonify({"error": "File not found"}), 404
+    try:
+        return send_file(model_path, as_attachment=True)
+    except Exception as e:
+        print(f"Error sending file: {e}")
+        return jsonify({"error": "Could not send file"}), 500
