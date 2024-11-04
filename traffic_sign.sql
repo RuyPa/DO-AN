@@ -8,7 +8,8 @@ CREATE TABLE tbl_user (
     address varchar(100),
     role varchar(100),
     created_date DATETIME,
-    created_by varchar(100)
+    created_by varchar(100),
+    password varchar(255)
 );
 
 -- Tạo bảng tbl_traffic_sign

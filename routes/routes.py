@@ -8,6 +8,7 @@ cloudinary.config(
         api_secret = "2GY34a7PT11RkkaTwEsKP9eYkwI",
         secure = True
     )
+from services.auth_service import role_required
 from services.traffic_sign_service import (
     get_all_signs,
     get_sign_by_id,
@@ -20,6 +21,7 @@ api_routes = Blueprint('api_routes', __name__)
 
 
 @api_routes.route('/api/traffic_signs', methods=['GET'])
+# @role_required('admin')
 def get_signs():
     signs = get_all_signs()
     return jsonify([sign.to_dict() for sign in signs])
