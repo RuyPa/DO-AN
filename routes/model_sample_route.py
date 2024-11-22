@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, abort
 from models.model_sample import ModelSample
+from services.auth_service import role_required
 from services.model_sample_service import (
     get_model_sample_by_id,
     add_model_sample,
@@ -11,6 +12,7 @@ model_sample_bp = Blueprint('model_sample_bp', __name__)
 
 # API lấy model samples theo model_id
 @model_sample_bp.route('/api/model_samples/model/<int:model_id>', methods=['GET'])
+@role_required('admin')
 def get_model_samples_by_model_id_route(model_id):
     model_samples = get_model_samples_by_model_id(model_id)
     if not model_samples:
@@ -18,6 +20,7 @@ def get_model_samples_by_model_id_route(model_id):
     return jsonify([model_sample.to_dict() for model_sample in model_samples])
 
 @model_sample_bp.route('/api/model_samples/<int:id>', methods=['GET'])
+@role_required('admin')
 def get_model_sample_route(id):
     model_sample = get_model_sample_by_id(id)
     if model_sample is None:
@@ -25,6 +28,7 @@ def get_model_sample_route(id):
     return jsonify(model_sample.to_dict())
 
 @model_sample_bp.route('/api/model_samples', methods=['POST'])
+@role_required('admin')
 def create_model_sample_route():
     data = request.get_json()
     

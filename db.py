@@ -1,4 +1,4 @@
-import bcrypt
+# import bcrypt
 import mysql.connector
 from flask import current_app
 import cloudinary
@@ -79,6 +79,7 @@ def get_user_by_id(user_id):
     connection.close()
     return user_data
 
+# phien ban cu la 3.2.0
 def check_password(stored_password, provided_password):
     # Pass stored_password as a string, not as bytes
     return bcrypt.check_password_hash(stored_password, provided_password)

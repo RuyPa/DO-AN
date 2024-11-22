@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, abort
 from models.label import Label
 from models.traffic_sign import TrafficSign
+from services.auth_service import role_required
 from services.label_service import (
     create_label,
     get_all_labels,
@@ -12,11 +13,13 @@ from services.label_service import (
 label_bp = Blueprint('label_bp', __name__)
 
 @label_bp.route('/api/labels', methods=['GET'])
+@role_required('admin', 'user')
 def get_labels():
     labels = get_all_labels()
     return jsonify([label.to_dict() for label in labels])
 
 @label_bp.route('/api/labels/<int:id>', methods=['GET'])
+@role_required('admin', 'user')
 def get_label(id):
     label = get_label_by_id(id)
     if label is None:
@@ -24,6 +27,7 @@ def get_label(id):
     return jsonify(label.to_dict())
 
 @label_bp.route('/api/labels', methods=['POST'])
+@role_required('admin', 'user')
 def create_label_route():
     data = request.get_json()
 
@@ -48,6 +52,7 @@ def create_label_route():
     return jsonify({'message': 'Label created successfully'}), 201
 
 @label_bp.route('/api/labels/<int:id>', methods=['PUT'])
+@role_required('admin', 'user')
 def update_label_route(id):
     data = request.json
     label = get_label_by_id(id)
@@ -65,6 +70,7 @@ def update_label_route(id):
     return jsonify({'message': 'Label updated successfully'})
 
 @label_bp.route('/api/labels/<int:id>', methods=['DELETE'])
+@role_required('admin', 'user')
 def delete_label_route(id):
     delete_label(id)
     return jsonify({'message': 'Label deleted successfully'})

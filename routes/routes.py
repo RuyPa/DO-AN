@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, abort
+from models.search import SearchParams
 from models.traffic_sign import TrafficSign
 from cloudinary.uploader import upload
 import cloudinary
@@ -13,6 +14,7 @@ from services.traffic_sign_service import (
     get_all_signs,
     get_sign_by_id,
     add_sign,
+    search_signs,
     update_sign,
     delete_sign
 )
@@ -21,12 +23,13 @@ api_routes = Blueprint('api_routes', __name__)
 
 
 @api_routes.route('/api/traffic_signs', methods=['GET'])
-# @role_required('admin')
+@role_required('admin', 'user')
 def get_signs():
     signs = get_all_signs()
     return jsonify([sign.to_dict() for sign in signs])
 
 @api_routes.route('/api/traffic_signs/<int:id>', methods=['GET'])
+@role_required('admin', 'user')
 def get_sign(id):
     sign = get_sign_by_id(id)
     if sign is None:
@@ -54,6 +57,7 @@ def get_sign(id):
     
 #     return jsonify({'message': 'Traffic sign created successfully'}), 201
 @api_routes.route('/api/traffic_signs', methods=['POST'])
+@role_required('admin')
 def create_sign():
     data = request.form  # Dữ liệu không phải JSON, mà là form-data
     
@@ -86,6 +90,7 @@ def create_sign():
     return jsonify({'message': 'Traffic sign created successfully'}), 201
 
 @api_routes.route('/api/traffic_signs/<int:id>', methods=['PUT'])
+@role_required('admin')
 def update_sign_route(id):
     data = request.form  # Lấy dữ liệu từ form-data
     
@@ -123,6 +128,30 @@ def update_sign_route(id):
 
 
 @api_routes.route('/api/traffic_signs/<int:id>', methods=['DELETE'])
+@role_required('admin')
 def delete_sign_route(id):
     delete_sign(id)
     return jsonify({'message': 'Traffic sign deleted successfully'})
+
+
+@api_routes.route('/api/traffic_signs/search', methods=['GET'])
+@role_required('admin', 'user')
+def search_traffic_signs():
+    keyword = request.args.get('keyword', default=None, type=str)
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+
+    search_params = SearchParams(keyword=keyword, page=page, page_size=page_size)
+    signs, total = search_signs(search_params)
+
+    response = {
+        'data': [sign.to_dict() for sign in signs],
+        'pagination': {
+            'current_page': search_params.page,
+            'page_size': search_params.page_size,
+            'total_items': total,
+            'total_pages': (total + search_params.page_size - 1) // search_params.page_size
+        }
+    }
+
+    return jsonify(response)

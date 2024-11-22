@@ -28,6 +28,11 @@ app.config['DB_USER'] = 'root'
 app.config['DB_PASSWORD'] = '123456'
 app.config['DB_DATABASE'] = 'traffic_sign'
 
+# app.config['DB_HOST'] = '45.252.248.164'
+# app.config['DB_USER'] = 'duydoba00'
+# app.config['DB_PASSWORD'] = 'Duydoba@02'
+# app.config['DB_DATABASE'] = 'traffic_sign'
+
 # Import routes and services after app config
 from services.traffic_sign_service import create_tables
 from routes.routes import api_routes
@@ -63,7 +68,7 @@ login_manager.login_view = 'login'  # Set the login view (route name)
 login_manager.login_message = "Please log in to access this page."
 
 
-from services.auth_service import User
+from services.auth_service import User, role_required
 
 @login_manager.unauthorized_handler
 def unauthorized():
@@ -316,6 +321,7 @@ def add_model_with_logging(app, sample_ids):
             connection.close()
 
 @app.route('/api/start-model', methods=['POST'])
+@role_required('admin')
 def start_model():
     data = request.get_json()
 
@@ -521,6 +527,7 @@ def retrain_model_with_logging(app, sample_ids, id):
 
 
 @app.route('/api/retrain-model/<int:id>', methods=['POST'])
+@role_required('admin')
 def retrain_model(id):
     data = request.get_json()
 

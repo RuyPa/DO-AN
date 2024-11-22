@@ -1,4 +1,5 @@
 from db import get_db_connection
+from models.search import SearchParams
 from models.traffic_sign import TrafficSign
 
 def create_tables():
@@ -60,3 +61,40 @@ def delete_sign(sign_id):
     connection.commit()
     cursor.close()
     connection.close()
+
+
+def search_signs(search_params: SearchParams):
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    # Base SQL query
+    query = "SELECT SQL_CALC_FOUND_ROWS * FROM tbl_traffic_sign"
+    params = []
+
+    # Add filtering condition if keyword is provided
+    if search_params.keyword:
+        query += " WHERE name LIKE %s OR description LIKE %s"
+        keyword = f"%{search_params.keyword}%"
+        params.extend([keyword, keyword])
+
+    # Add pagination
+    query += " LIMIT %s OFFSET %s"
+    params.extend([search_params.page_size, search_params.offset])
+
+    # Debug log (optional): To help identify issues during development
+    print("Executing SQL Query:", query)
+    print("With Parameters:", params)
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+
+    # Get total count of items
+    cursor.execute("SELECT FOUND_ROWS()")
+    total = cursor.fetchone()['FOUND_ROWS()']
+
+    cursor.close()
+    connection.close()
+
+    # Return the paginated data and total count
+    return [TrafficSign.from_row(row) for row in rows], total
+

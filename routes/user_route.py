@@ -1,11 +1,13 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from db import add_user
+from services.auth_service import role_required
 
 user_bp = Blueprint('user', __name__)
 
 @user_bp.route('/add-user', methods=['POST'])
 @login_required
+@role_required('admin')
 def add_user_route():
     # Check if current user is an admin
     if current_user.role != 'admin':
