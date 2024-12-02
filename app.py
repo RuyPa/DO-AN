@@ -1,6 +1,9 @@
 import csv
+from io import BytesIO
+import cloudinary
 from flask import Flask, abort, request, jsonify, send_file, render_template
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_socketio import SocketIO, emit
 import threading
@@ -8,6 +11,7 @@ import shutil
 import uuid
 import time
 import os
+import requests
 import yaml
 from sklearn.model_selection import train_test_split
 from ultralytics import YOLO
@@ -43,7 +47,13 @@ from routes.model_route import model_bp
 from routes.auth_route import auth_bp
 from routes.user_route import user_bp
 
-
+# Cấu hình Cloudinary
+cloudinary.config( 
+    cloud_name="dkf74ju3o", 
+    api_key="639453249624293", 
+    api_secret="2GY34a7PT11RkkaTwEsKP9eYkwI",
+    secure=True
+)
 # Register blueprints
 app.register_blueprint(api_routes)
 app.register_blueprint(sample_bp)
@@ -57,27 +67,53 @@ app.register_blueprint(user_bp)
 
 from flask_bcrypt import Bcrypt
 
-app.secret_key = 'jkasKAHS7QFjhagd662QHFCASHFGAW56QAWFHIHAWIEFHCBvVAS'  # Needed for session management
+# app.secret_key = 'jkasKAHS7QFjhagd662QHFCASHFGAW56QAWFHIHAWIEFHCBvVAS'  # Needed for session management
 bcrypt = Bcrypt(app)
 
-login_manager = LoginManager()
-login_manager.init_app(app)  # Attach the LoginManager to the app
-login_manager.login_view = 'login'  # Set the login view (route name)
+app.config['JWT_SECRET_KEY'] = 'jkasKAHS7QFjhagd662QHFCASHFGAW56QAWFHIHAWIEFHCBvVAS'  # Thay bằng khóa bí mật của bạn
+jwt = JWTManager(app)
 
-# Optionally, you can also set a custom message for unauthorized access
-login_manager.login_message = "Please log in to access this page."
+# login_manager = LoginManager()
+# login_manager.init_app(app)  # Attach the LoginManager to the app
+# login_manager.login_view = 'login'  # Set the login view (route name)
+
+# # Optionally, you can also set a custom message for unauthorized access
+# login_manager.login_message = "Please log in to access this page."
 
 
 from services.auth_service import User, role_required
 
-@login_manager.unauthorized_handler
-def unauthorized():
-    # This function runs if a user who is not logged in tries to access a protected route
-    return jsonify({'error': 'You must be logged in to access this resource'}), 401
+# @login_manager.unauthorized_handler
+# def unauthorized():
+#     # This function runs if a user who is not logged in tries to access a protected route
+#     return jsonify({'error': 'You must be logged in to access this resource'}), 401
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get_user_by_id(user_id)
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return User.get_user_by_id(user_id)
+
+@jwt.unauthorized_loader
+def custom_unauthorized_response(callback):
+    return jsonify({
+        'error': 'You must be logged in to access this resource',
+        'message': 'Missing or invalid token'
+    }), 401
+
+# Callback khi token hết hạn
+@jwt.expired_token_loader
+def custom_expired_token_response(jwt_header, jwt_payload):
+    return jsonify({
+        'error': 'Token has expired',
+        'message': 'Please log in again to get a new token'
+    }), 401
+
+# Callback khi token không hợp lệ
+@jwt.invalid_token_loader
+def custom_invalid_token_response(callback):
+    return jsonify({
+        'error': 'Invalid token',
+        'message': 'The provided token is not valid'
+    }), 422
 
 @app.route('/')
 def index():
@@ -175,17 +211,18 @@ def add_model_with_logging(app, sample_ids):
         time.sleep(0.1)
 
         for sample in samples_with_labels:
-            sample_path = sample['sample_path']
+            sample_path = sample['sample_path']  # Đây là URL từ cloud
             sample_name = sample['sample_name']
 
             # If there's a label, write the content, otherwise create an empty file
-            label_content = f"{sample['centerX']} {sample['centerY']} {sample['height']} {sample['width']} {sample['traffic_sign_id']}\n" if sample['centerX'] and sample['centerY'] else ""
+            label_content = f"{sample['traffic_sign_id']} {sample['centerX']} {sample['centerY']} {sample['height']} {sample['width']}\n" if sample['centerX'] and sample['centerY'] else ""
 
             if sample_name not in labels:
                 labels[sample_name] = label_content
             else:
                 labels[sample_name] += label_content
 
+            # Save image URL (no need to keep the path if it's a URL)
             image_paths[sample_name] = sample_path
 
         # Emit progress to the frontend
@@ -196,22 +233,30 @@ def add_model_with_logging(app, sample_ids):
         sample_names = list(image_paths.keys())
         train_samples, valid_samples = train_test_split(sample_names, test_size=0.3, random_state=42)
 
-        # Copy train samples
+        # Download and save train samples
         for sample_name in train_samples:
-            image_path = image_paths[sample_name]
+            image_url = image_paths[sample_name]  # Cloud URL
             label_content = labels[sample_name]
+            
+            # Download image from Cloud
             image_save_path = os.path.join(base_dir, 'train', 'images', sample_name)
             label_save_path = os.path.join(base_dir, 'train', 'labels', sample_name.replace('.png', '.txt'))
-            copy_image(image_path, image_save_path)
+            
+            # Download image from Cloud
+            download_and_save_image(image_url, image_save_path)
             write_label_file(label_save_path, label_content)
 
-        # Copy valid samples
+        # Download and save valid samples
         for sample_name in valid_samples:
-            image_path = image_paths[sample_name]
+            image_url = image_paths[sample_name]  # Cloud URL
             label_content = labels[sample_name]
+            
+            # Download image from Cloud
             image_save_path = os.path.join(base_dir, 'valid', 'images', sample_name)
             label_save_path = os.path.join(base_dir, 'valid', 'labels', sample_name.replace('.png', '.txt'))
-            copy_image(image_path, image_save_path)
+            
+            # Download image from Cloud
+            download_and_save_image(image_url, image_save_path)
             write_label_file(label_save_path, label_content)
 
         # Emit progress to the frontend
@@ -270,7 +315,6 @@ def add_model_with_logging(app, sample_ids):
 
         results_csv_path = os.path.join(new_path, 'results.csv')
 
-
         precision = 0
         recall = 0
         f1 = 0
@@ -281,13 +325,24 @@ def add_model_with_logging(app, sample_ids):
             reader = csv.reader(f)
             next(reader)  # Skip header row
 
+            # Giả sử bạn đang đọc dữ liệu từ một file CSV
             for row in reader:
                 count += 1
-                precision += float(row[4])
-                recall += float(row[5])
-                acc += float(row[7])
-                # Compute F1 based on precision and recall at each iteration
-                f1 += (2 * precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
+                
+                # Kiểm tra và thay thế 'nan' bằng 0
+                precision_value = float(row[4]) if row[4] != 'nan' else 0
+                recall_value = float(row[5]) if row[5] != 'nan' else 0
+                acc_value = float(row[7]) if row[7] != 'nan' else 0
+
+                precision += precision_value
+                recall += recall_value
+                acc += acc_value
+                
+                # Tính F1 tại mỗi lần lặp
+                if precision_value + recall_value != 0:
+                    f1 += (2 * precision_value * recall_value) / (precision_value + recall_value)
+                else:
+                    f1 += 0
 
             # Average calculations
             avg_precision = precision / count
@@ -315,13 +370,12 @@ def add_model_with_logging(app, sample_ids):
             # Commit các thay đổi vào cơ sở dữ liệu
             connection.commit()
 
-
             # Close the connection
             cursor.close()
             connection.close()
 
+
 @app.route('/api/start-model', methods=['POST'])
-@role_required('admin')
 def start_model():
     data = request.get_json()
 
@@ -334,6 +388,8 @@ def start_model():
     threading.Thread(target=add_model_with_logging, args=(app, sample_ids)).start()
 
     return jsonify({'message': 'Model creation started!'})
+
+
 
 
 def retrain_model_with_logging(app, sample_ids, id):
@@ -381,13 +437,14 @@ def retrain_model_with_logging(app, sample_ids, id):
             sample_name = sample['sample_name']
 
             # If there's a label, write the content, otherwise create an empty file
-            label_content = f"{sample['centerX']} {sample['centerY']} {sample['height']} {sample['width']} {sample['traffic_sign_id']}\n" if sample['centerX'] and sample['centerY'] else ""
+            label_content = f"{sample['traffic_sign_id']} {sample['centerX']} {sample['centerY']} {sample['height']} {sample['width']}\n" if sample['centerX'] and sample['centerY'] else ""
 
             if sample_name not in labels:
                 labels[sample_name] = label_content
             else:
                 labels[sample_name] += label_content
 
+            # Save image URL (no need to keep the path if it's a URL)
             image_paths[sample_name] = sample_path
 
         # Emit progress to the frontend
@@ -398,22 +455,30 @@ def retrain_model_with_logging(app, sample_ids, id):
         sample_names = list(image_paths.keys())
         train_samples, valid_samples = train_test_split(sample_names, test_size=0.3, random_state=42)
 
-        # Copy train samples
+        # Download and save train samples
         for sample_name in train_samples:
-            image_path = image_paths[sample_name]
+            image_url = image_paths[sample_name]  # Cloudinary URL
             label_content = labels[sample_name]
+            
+            # Download image from Cloudinary
             image_save_path = os.path.join(base_dir, 'train', 'images', sample_name)
             label_save_path = os.path.join(base_dir, 'train', 'labels', sample_name.replace('.png', '.txt'))
-            copy_image(image_path, image_save_path)
+            
+            # Download image from Cloudinary
+            download_and_save_image(image_url, image_save_path)
             write_label_file(label_save_path, label_content)
 
-        # Copy valid samples
+        # Download and save valid samples
         for sample_name in valid_samples:
-            image_path = image_paths[sample_name]
+            image_url = image_paths[sample_name]  # Cloudinary URL
             label_content = labels[sample_name]
+            
+            # Download image from Cloudinary
             image_save_path = os.path.join(base_dir, 'valid', 'images', sample_name)
             label_save_path = os.path.join(base_dir, 'valid', 'labels', sample_name.replace('.png', '.txt'))
-            copy_image(image_path, image_save_path)
+            
+            # Download image from Cloudinary
+            download_and_save_image(image_url, image_save_path)
             write_label_file(label_save_path, label_content)
 
         # Emit progress to the frontend
@@ -459,17 +524,17 @@ def retrain_model_with_logging(app, sample_ids, id):
 
         # Train YOLO model using the fetched model path
         model = YOLO(model_path + "\weights\\best.pt")
-        results = model.train(data=relative_config_path, epochs=10, imgsz=640, batch=4, device=0)
+        results = model.train(data=relative_config_path, epochs=10, imgsz=640, batch=2, device=0)
 
         socketio.emit('progress', {'message': "Model training completed!", 'progress': 100})
 
+        # Fetch last model and create a new record in the database
         cursor.execute("SELECT id, path FROM tbl_model ORDER BY id DESC LIMIT 1")
         last_model = cursor.fetchone()
 
         last_path = last_model['path']
 
         base, train_num = os.path.split(last_path)
-        
         num = int(train_num.replace('train', ''))
         next_num = num + 1
         new_train_path = f"train{next_num}"
@@ -487,13 +552,24 @@ def retrain_model_with_logging(app, sample_ids, id):
             reader = csv.reader(f)
             next(reader)  # Skip header row
 
+                    # Giả sử bạn đang đọc dữ liệu từ một file CSV
             for row in reader:
                 count += 1
-                precision += float(row[4])
-                recall += float(row[5])
-                acc += float(row[7])
-                # Compute F1 based on precision and recall at each iteration
-                f1 += (2 * precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
+                
+                # Kiểm tra và thay thế 'nan' bằng 0
+                precision_value = float(row[4]) if row[4] != 'nan' else 0
+                recall_value = float(row[5]) if row[5] != 'nan' else 0
+                acc_value = float(row[7]) if row[7] != 'nan' else 0
+
+                precision += precision_value
+                recall += recall_value
+                acc += acc_value
+                
+                # Tính F1 tại mỗi lần lặp
+                if precision_value + recall_value != 0:
+                    f1 += (2 * precision_value * recall_value) / (precision_value + recall_value)
+                else:
+                    f1 += 0
 
             # Average calculations
             avg_precision = precision / count
@@ -524,10 +600,16 @@ def retrain_model_with_logging(app, sample_ids, id):
             # Close the connection
             cursor.close()
             connection.close()
+from PIL import Image
+
+def download_and_save_image(image_url, save_path):
+    # Download the image from URL
+    response = requests.get(image_url)
+    img = Image.open(BytesIO(response.content))
+    img.save(save_path)
 
 
 @app.route('/api/retrain-model/<int:id>', methods=['POST'])
-@role_required('admin')
 def retrain_model(id):
     data = request.get_json()
 
@@ -543,5 +625,5 @@ def retrain_model(id):
 
 if __name__ == '__main__':
     # socketio.run(app, host='127.0.0.1', port=5000, debug=False)
-    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+    socketio.run(app, host='0.0.0.0', port=5001, debug=False)
 

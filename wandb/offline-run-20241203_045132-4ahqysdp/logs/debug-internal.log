@@ -1,0 +1,16 @@
+{"time":"2024-12-03T04:51:32.6605972+07:00","level":"INFO","msg":"using version","core version":"0.18.6"}
+{"time":"2024-12-03T04:51:32.6606067+07:00","level":"INFO","msg":"created symlink","path":"C:\\Users\\ruy_pa_\\OneDrive - ptit.edu.vn\\do_an_2024\\YOLO\\app\\wandb\\offline-run-20241203_045132-4ahqysdp\\logs\\debug-core.log"}
+{"time":"2024-12-03T04:51:32.7695943+07:00","level":"INFO","msg":"created new stream","id":"4ahqysdp"}
+{"time":"2024-12-03T04:51:32.7695943+07:00","level":"INFO","msg":"stream: started","id":"4ahqysdp"}
+{"time":"2024-12-03T04:51:32.7695943+07:00","level":"INFO","msg":"sender: started","stream_id":"4ahqysdp"}
+{"time":"2024-12-03T04:51:32.7695943+07:00","level":"INFO","msg":"handler: started","stream_id":{"value":"4ahqysdp"}}
+{"time":"2024-12-03T04:51:32.7695943+07:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"4ahqysdp"}}
+{"time":"2024-12-03T04:51:32.7829147+07:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-12-03T04:54:22.1157297+07:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-12-03T04:54:22.1167783+07:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-12-03T04:54:22.1209755+07:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2024-12-03T04:54:23.1391188+07:00","level":"INFO","msg":"stream: closing","id":"4ahqysdp"}
+{"time":"2024-12-03T04:54:23.1391188+07:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"4ahqysdp"}}
+{"time":"2024-12-03T04:54:23.1391188+07:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"4ahqysdp"}}
+{"time":"2024-12-03T04:54:23.1391188+07:00","level":"INFO","msg":"sender: closed","stream_id":"4ahqysdp"}
+{"time":"2024-12-03T04:54:23.1396337+07:00","level":"INFO","msg":"stream: closed","id":"4ahqysdp"}

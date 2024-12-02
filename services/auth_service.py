@@ -71,16 +71,33 @@ from flask_login import current_user
 #         return decorated_function
 #     return decorator
 
-def role_required(*roles):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            # Check if the user is authenticated
-            if not current_user.is_authenticated:
-                return jsonify({'error': 'You must be logged in to access this resource'}), 401
+# def role_required(*roles):
+#     def decorator(f):
+#         @wraps(f)
+#         def decorated_function(*args, **kwargs):
+#             # Check if the user is authenticated
+#             if not current_user.is_authenticated:
+#                 return jsonify({'error': 'You must be logged in to access this resource'}), 401
             
-            # Check if the user's role is in the allowed roles
-            if current_user.role not in roles:
+#             # Check if the user's role is in the allowed roles
+#             if current_user.role not in roles:
+#                 return jsonify({'error': 'Unauthorized access'}), 403
+            
+#             return f(*args, **kwargs)
+#         return decorated_function
+#     return decorator
+from flask_jwt_extended import get_jwt_identity, jwt_required
+from functools import wraps
+
+def role_required(*roles):
+    def decorator(f): 
+        @wraps(f)
+        @jwt_required()
+        def decorated_function(*args, **kwargs):
+            current_user = get_jwt_identity()
+            
+            # Kiểm tra role của user
+            if current_user['role'] not in roles:
                 return jsonify({'error': 'Unauthorized access'}), 403
             
             return f(*args, **kwargs)
