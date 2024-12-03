@@ -175,22 +175,54 @@ def add_model_with_logging(app, sample_ids):
         connection = get_db_connection()
         cursor = connection.cursor(dictionary=True)
 
-        # Query to get sample and label data
-        format_strings = ','.join(['%s'] * len(sample_ids))
-        query = f'''
-            SELECT 
-                s.path as sample_path, 
-                s.name as sample_name, 
-                s.code as sample_code,
-                l.centerX, l.centerY, l.height, l.width, 
-                ts.id as traffic_sign_id
-            FROM tbl_sample s
-            LEFT JOIN tbl_label l ON s.id = l.sample_id
-            LEFT JOIN tbl_traffic_sign ts ON l.traffic_sign_id = ts.id
-            WHERE s.id IN ({format_strings})
-        '''
-        cursor.execute(query, tuple(sample_ids))
-        samples_with_labels = cursor.fetchall()
+        # Kiểm tra nếu sample_ids có phần tử đầu tiên là 0
+        if sample_ids[0] == 0:
+            # Nếu phần tử đầu tiên là 0, lấy tất cả các sample trong bảng tbl_sample
+            query = '''
+                SELECT 
+                    s.path as sample_path, 
+                    s.name as sample_name, 
+                    s.code as sample_code,
+                    l.centerX, l.centerY, l.height, l.width, 
+                    ts.id as traffic_sign_id,
+                    s.id as sample_id  -- Lấy thêm sample_id để giúp xác định mẫu
+                FROM tbl_sample s
+                LEFT JOIN tbl_label l ON s.id = l.sample_id
+                LEFT JOIN tbl_traffic_sign ts ON l.traffic_sign_id = ts.id
+                JOIN (
+                    SELECT id
+                    FROM tbl_sample
+                    LIMIT 500
+                ) subquery ON s.id = subquery.id;
+            '''
+            cursor.execute(query)
+            samples_with_labels = cursor.fetchall()
+
+            # Cập nhật lại sample_ids từ samples_with_labels
+            sample_ids.clear()  # Xóa hết thông tin trong sample_ids
+            sample_ids.extend([sample['sample_id'] for sample in samples_with_labels])  # Thêm các sample_id mới vào
+        else:
+            # Nếu không, lấy sample theo sample_ids
+            format_strings = ','.join(['%s'] * len(sample_ids))
+            query = f'''
+                SELECT 
+                    s.path as sample_path, 
+                    s.name as sample_name, 
+                    s.code as sample_code,
+                    l.centerX, l.centerY, l.height, l.width, 
+                    ts.id as traffic_sign_id,
+                    s.id as sample_id  -- Lấy thêm sample_id để giúp xác định mẫu
+                FROM tbl_sample s
+                LEFT JOIN tbl_label l ON s.id = l.sample_id
+                LEFT JOIN tbl_traffic_sign ts ON l.traffic_sign_id = ts.id
+                WHERE s.id IN ({format_strings})
+            '''
+            cursor.execute(query, tuple(sample_ids))
+            samples_with_labels = cursor.fetchall()
+
+            # Cập nhật lại sample_ids từ samples_with_labels
+            sample_ids.clear()  # Xóa hết thông tin trong sample_ids
+            sample_ids.extend([sample['sample_id'] for sample in samples_with_labels])  # Thêm các sample_id mới vào
 
         # Emit log and yield progress to the frontend
         socketio.emit('progress', {'message': "Creating directories and preparing data...", 'progress': 10})
@@ -283,7 +315,7 @@ def add_model_with_logging(app, sample_ids):
         with open(config_path, 'w', encoding='utf-8') as yaml_file:
             yaml.dump(config_content, yaml_file)
 
-        relative_config_path = os.path.join(base_dir, 'config.yaml').replace('\\', '/')
+        relative_config_path = os.path.join(base_dir, 'config.yaml')
 
         # Emit progress to the frontend
         socketio.emit('progress', {'message': f"Config path: {relative_config_path}", 'progress': 70})
@@ -297,7 +329,8 @@ def add_model_with_logging(app, sample_ids):
 
         # Train YOLO model
         model = YOLO('static/yolov8n.pt')
-        results = model.train(data=relative_config_path, epochs=10, imgsz=640, batch=4, device=0)
+        # results = model.train(data=relative_config_path, epochs=10, imgsz=640, batch=4, device=0)
+        results = model.train(data=relative_config_path, epochs=1, imgsz=640, batch=2, device=0)
 
         socketio.emit('progress', {'message': "Model training completed!", 'progress': 100})
 
@@ -505,7 +538,7 @@ def retrain_model_with_logging(app, sample_ids, id):
         with open(config_path, 'w', encoding='utf-8') as yaml_file:
             yaml.dump(config_content, yaml_file)
 
-        relative_config_path = os.path.join(base_dir, 'config.yaml').replace('\\', '/')
+        relative_config_path = os.path.join(base_dir, 'config.yaml')
 
         # Emit progress to the frontend
         socketio.emit('progress', {'message': f"Config path: {relative_config_path}", 'progress': 70})
@@ -524,8 +557,8 @@ def retrain_model_with_logging(app, sample_ids, id):
 
         # Train YOLO model using the fetched model path
         model = YOLO(model_path + "\weights\\best.pt")
-        results = model.train(data=relative_config_path, epochs=10, imgsz=640, batch=2, device=0)
-
+        # results = model.train(data=relative_config_path, epochs=10, imgsz=640, batch=2, device=0)
+        results = model.train(data=relative_config_path, epochs=1, imgsz=640, batch=2, device=0)
         socketio.emit('progress', {'message': "Model training completed!", 'progress': 100})
 
         # Fetch last model and create a new record in the database

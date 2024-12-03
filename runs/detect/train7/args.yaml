@@ -1,11 +1,11 @@
 task: detect
 mode: train
-model: static/yolov8n.pt
-data: static/0dba6553-f068-4664-bcbc-40419842efd8/config.yaml
-epochs: 10
+model: runs\detect\train6\weights\best.pt
+data: static\30556f0c-b004-404f-a6fe-d2ab36a20485\config.yaml
+epochs: 1
 time: null
 patience: 100
-batch: 4
+batch: 2
 imgsz: 640
 save: true
 save_period: -1
@@ -68,7 +68,7 @@ int8: false
 dynamic: false
 simplify: true
 opset: null
-workspace: 4
+workspace: null
 nms: false
 lr0: 0.01
 lrf: 0.01
@@ -82,7 +82,6 @@ cls: 0.5
 dfl: 1.5
 pose: 12.0
 kobj: 1.0
-label_smoothing: 0.0
 nbs: 64
 hsv_h: 0.015
 hsv_s: 0.7

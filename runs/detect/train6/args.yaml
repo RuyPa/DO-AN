@@ -1,11 +1,11 @@
 task: detect
 mode: train
 model: static/yolov8n.pt
-data: static/622b111c-3814-4597-a506-0db9d515a263/config.yaml
-epochs: 10
+data: static\45d75eea-8b15-4314-866c-adb066feb4c1\config.yaml
+epochs: 1
 time: null
 patience: 100
-batch: 4
+batch: 2
 imgsz: 640
 save: true
 save_period: -1
@@ -68,7 +68,7 @@ int8: false
 dynamic: false
 simplify: true
 opset: null
-workspace: 4
+workspace: null
 nms: false
 lr0: 0.01
 lrf: 0.01
@@ -82,7 +82,6 @@ cls: 0.5
 dfl: 1.5
 pose: 12.0
 kobj: 1.0
-label_smoothing: 0.0
 nbs: 64
 hsv_h: 0.015
 hsv_s: 0.7
