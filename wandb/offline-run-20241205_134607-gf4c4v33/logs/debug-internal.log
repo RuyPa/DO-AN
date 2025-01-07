@@ -1,0 +1,16 @@
+{"time":"2024-12-05T13:46:07.6524084+07:00","level":"INFO","msg":"using version","core version":"0.18.6"}
+{"time":"2024-12-05T13:46:07.6524084+07:00","level":"INFO","msg":"created symlink","path":"C:\\Users\\ruy_pa_\\OneDrive - ptit.edu.vn\\do_an_2024\\YOLO\\app\\wandb\\offline-run-20241205_134607-gf4c4v33\\logs\\debug-core.log"}
+{"time":"2024-12-05T13:46:08.7211734+07:00","level":"INFO","msg":"created new stream","id":"gf4c4v33"}
+{"time":"2024-12-05T13:46:08.7211734+07:00","level":"INFO","msg":"stream: started","id":"gf4c4v33"}
+{"time":"2024-12-05T13:46:08.7211734+07:00","level":"INFO","msg":"handler: started","stream_id":{"value":"gf4c4v33"}}
+{"time":"2024-12-05T13:46:08.7211734+07:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"gf4c4v33"}}
+{"time":"2024-12-05T13:46:08.7211734+07:00","level":"INFO","msg":"sender: started","stream_id":"gf4c4v33"}
+{"time":"2024-12-05T13:46:08.7358006+07:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-12-05T13:46:53.1434167+07:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-12-05T13:46:53.1452146+07:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-12-05T13:46:53.1496717+07:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2024-12-05T13:46:54.1643173+07:00","level":"INFO","msg":"stream: closing","id":"gf4c4v33"}
+{"time":"2024-12-05T13:46:54.1643173+07:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"gf4c4v33"}}
+{"time":"2024-12-05T13:46:54.1643173+07:00","level":"INFO","msg":"sender: closed","stream_id":"gf4c4v33"}
+{"time":"2024-12-05T13:46:54.1643173+07:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"gf4c4v33"}}
+{"time":"2024-12-05T13:46:54.1648665+07:00","level":"INFO","msg":"stream: closed","id":"gf4c4v33"}

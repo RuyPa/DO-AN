@@ -1,0 +1,16 @@
+{"time":"2024-12-10T17:26:13.3207332+07:00","level":"INFO","msg":"using version","core version":"0.18.6"}
+{"time":"2024-12-10T17:26:13.3207332+07:00","level":"INFO","msg":"created symlink","path":"C:\\Users\\ruy_pa_\\OneDrive - ptit.edu.vn\\do_an_2024\\YOLO\\app\\wandb\\offline-run-20241210_172613-hpnepuw3\\logs\\debug-core.log"}
+{"time":"2024-12-10T17:26:13.8612477+07:00","level":"INFO","msg":"created new stream","id":"hpnepuw3"}
+{"time":"2024-12-10T17:26:13.8612477+07:00","level":"INFO","msg":"stream: started","id":"hpnepuw3"}
+{"time":"2024-12-10T17:26:13.8612477+07:00","level":"INFO","msg":"sender: started","stream_id":"hpnepuw3"}
+{"time":"2024-12-10T17:26:13.8612477+07:00","level":"INFO","msg":"handler: started","stream_id":{"value":"hpnepuw3"}}
+{"time":"2024-12-10T17:26:13.8612477+07:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"hpnepuw3"}}
+{"time":"2024-12-10T17:26:13.8725522+07:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-12-10T17:28:20.4910123+07:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-12-10T17:28:20.492133+07:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-12-10T17:28:20.4931726+07:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2024-12-10T17:28:21.5153434+07:00","level":"INFO","msg":"stream: closing","id":"hpnepuw3"}
+{"time":"2024-12-10T17:28:21.5153434+07:00","level":"INFO","msg":"handler: closed","stream_id":{"value":"hpnepuw3"}}
+{"time":"2024-12-10T17:28:21.5153434+07:00","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"hpnepuw3"}}
+{"time":"2024-12-10T17:28:21.5158509+07:00","level":"INFO","msg":"sender: closed","stream_id":"hpnepuw3"}
+{"time":"2024-12-10T17:28:21.5159656+07:00","level":"INFO","msg":"stream: closed","id":"hpnepuw3"}

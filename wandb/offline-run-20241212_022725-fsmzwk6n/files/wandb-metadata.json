@@ -1,0 +1,42 @@
+{
+  "os":  "Windows-10-10.0.19045-SP0",
+  "python":  "3.11.5",
+  "startedAt":  "2024-12-11T19:27:25.026410Z",
+  "program":  "c:\\Users\\ruy_pa_\\OneDrive - ptit.edu.vn\\do_an_2024\\YOLO\\app\\app.py",
+  "codePath":  "app.py",
+  "git":  {
+    "remote":  "https://github.com/RuyPa/DO-AN.git",
+    "commit":  "de755b814ab72bb7c01d231b384944bae75bbf65"
+  },
+  "root":  "C:\\Users\\ruy_pa_\\OneDrive - ptit.edu.vn\\do_an_2024\\YOLO\\app",
+  "host":  "DESKTOP-C9SPK6P",
+  "username":  "ruy_pa_",
+  "executable":  "C:\\Users\\ruy_pa_\\anaconda3\\python.exe",
+  "codePathLocal":  "app.py",
+  "cpu_count":  4,
+  "cpu_count_logical":  8,
+  "gpu":  "NVIDIA GeForce GTX 1650 Ti",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "284995612672",
+      "used":  "271734673408"
+    }
+  },
+  "memory":  {
+    "total":  "17002713088"
+  },
+  "cpu":  {
+    "count":  4,
+    "countLogical":  8
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA GeForce GTX 1650 Ti",
+      "memoryTotal":  "4294967296",
+      "cudaCores":  1024,
+      "architecture":  "Turing"
+    }
+  ],
+  "cudaVersion":  "12.6"
+}

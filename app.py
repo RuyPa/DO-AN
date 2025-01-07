@@ -18,7 +18,8 @@ from ultralytics import YOLO
 import torch
 from db import get_db_connection
 
-
+import os
+os.environ["WANDB_MODE"] = "offline"
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")  # Sử dụng threading cho SocketIO
 
@@ -26,16 +27,16 @@ socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")  # S�
 CORS(app, supports_credentials=True)  # Allow credentials for all domains
 
 
-# Database configuration
-app.config['DB_HOST'] = 'localhost'
-app.config['DB_USER'] = 'root'
-app.config['DB_PASSWORD'] = '123456'
-app.config['DB_DATABASE'] = 'traffic_sign'
-
-# app.config['DB_HOST'] = '45.252.248.164'
-# app.config['DB_USER'] = 'duydoba00'
-# app.config['DB_PASSWORD'] = 'Duydoba@02'
+# # Database configuration
+# app.config['DB_HOST'] = 'localhost'
+# app.config['DB_USER'] = 'root'
+# app.config['DB_PASSWORD'] = '123456'
 # app.config['DB_DATABASE'] = 'traffic_sign'
+
+app.config['DB_HOST'] = '45.252.248.164'
+app.config['DB_USER'] = 'duyall'
+app.config['DB_PASSWORD'] = 'Duydoba@02'
+app.config['DB_DATABASE'] = 'traffic_sign'
 
 # Import routes and services after app config
 from services.traffic_sign_service import create_tables
