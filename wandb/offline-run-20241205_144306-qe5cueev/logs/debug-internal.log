@@ -1,8 +1,0 @@
-{"time":"2024-12-05T14:43:06.5144155+07:00","level":"INFO","msg":"using version","core version":"0.18.6"}
-{"time":"2024-12-05T14:43:06.5149192+07:00","level":"INFO","msg":"created symlink","path":"C:\\Users\\ruy_pa_\\OneDrive - ptit.edu.vn\\do_an_2024\\YOLO\\app\\wandb\\offline-run-20241205_144306-qe5cueev\\logs\\debug-core.log"}
-{"time":"2024-12-05T14:43:06.9504748+07:00","level":"INFO","msg":"created new stream","id":"qe5cueev"}
-{"time":"2024-12-05T14:43:06.9504748+07:00","level":"INFO","msg":"sender: started","stream_id":"qe5cueev"}
-{"time":"2024-12-05T14:43:06.9504748+07:00","level":"INFO","msg":"stream: started","id":"qe5cueev"}
-{"time":"2024-12-05T14:43:06.9504748+07:00","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"qe5cueev"}}
-{"time":"2024-12-05T14:43:06.9504748+07:00","level":"INFO","msg":"handler: started","stream_id":{"value":"qe5cueev"}}
-{"time":"2024-12-05T14:43:06.9772288+07:00","level":"INFO","msg":"Starting system monitor"}
